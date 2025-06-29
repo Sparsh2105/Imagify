@@ -4,6 +4,7 @@ import Result from './pages/Result.jsx'
 import BuyCredit from './pages/BuyCredit.jsx'
 import { Routes, Route } from 'react-router-dom'
 import Navbar from './components/Navbar.jsx'
+import AppContextProvider from './context/AppContext.jsx'
 
 const App = () => {
   return (
