@@ -5,6 +5,7 @@ import BuyCredit from './pages/BuyCredit.jsx'
 import { Routes, Route } from 'react-router-dom'
 import Navbar from './components/Navbar.jsx'
 import AppContextProvider from './context/AppContext.jsx'
+import Footer from './components/Footer.jsx'
 
 const App = () => {
   return (
@@ -15,6 +16,8 @@ const App = () => {
         <Route path='/result' element={<Result />} />
         <Route path='/buy' element={<BuyCredit />} />
         </Routes>
+
+        <Footer/>
 
 
 
