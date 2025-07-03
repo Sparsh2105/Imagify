@@ -24,9 +24,7 @@ const Navbar = () => {
             <div className='relative group'>
               <UserButton afterSignOutUrl='/' />
               <div className='absolute hidden group-hover:block top-full mt-2 right-0 z-10 bg-white text-black rounded shadow p-2'>
-                <ul className='list-none m-0 p-2 bg-white rounded-md border text-sm'>
-                  <li className='cursor-pointer py-1 px-2 pr-10'>Logout</li>
-                </ul>
+               
               </div>
             </div>
           </div>
