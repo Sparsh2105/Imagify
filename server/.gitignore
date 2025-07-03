@@ -1,0 +1,19 @@
+# Node dependencies
+node_modules/
+
+# Environment variables
+.env
+
+# Logs
+logs/
+*.log
+
+# Optional build folders (if you ever use TypeScript)
+dist/
+build/
+
+# System junk
+.DS_Store
+
+# Editor settings
+.vscode/
