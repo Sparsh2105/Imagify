@@ -1,44 +1,68 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { assets } from '../assets/assets.js';
 import { Link, useNavigate } from 'react-router-dom';
 import { AppContext } from '../context/AppContext.jsx';
-import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/clerk-react';
 
 const Navbar = () => {
-  const { user } = useContext(AppContext);
+  const { user, setUser,setShowLogin } = useContext(AppContext);
   const navigate = useNavigate();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem('imagify-user');
+    navigate('/');
+  };
 
   return (
-    <div className='flex items-center justify-between px-4 py-4'>
+    <div className='flex items-center justify-between px-4 py-4 relative'>
       <Link to="/">
-        <img src={assets.logo} alt="" className='w-28 sm:w-32 lg:w-40' />
+        <img src={assets.logo} alt="Imagify Logo" className='w-28 sm:w-32 lg:w-40' />
       </Link>
-      <div>
-        <SignedIn>
-          <div className='flex items-center gap-2 sm:gap-3'>
-            <button onClick={() => navigate('/buy')} className='flex items-center gap-2 bg-blue-100 px-4 sm:px-6 py-1.5 sm:py-3 rounded-full hover:scale-105 transition-all duration-700'>
-              <img src={assets.credit_star} alt="" className='w-5' />
-              <p className='text-xs sm:text-sm font-medium text-gray-600'>Credits left : 50</p>
+
+      <div className='flex items-center gap-3 sm:gap-5'>
+        <p onClick={() => navigate('/buy')} className='cursor-pointer'>Pricing</p>
+
+        {user ? (
+          <div className='flex items-center gap-3 relative'>
+            <button onClick={() => navigate('/buy')} className='flex items-center gap-2 bg-blue-100 px-4 py-2 rounded-full hover:scale-105 transition-all duration-300'>
+              <img src={assets.credit_star} alt="credits" className='w-5' />
+              <p className='text-sm text-gray-600'>Credits left: {user.credits}</p>
             </button>
-            <p className='text-gray-600 max-sm::hidden pl-4'>Hi, Sparsh</p>
-            <div className='relative group'>
-              <UserButton afterSignOutUrl='/' />
-              <div className='absolute hidden group-hover:block top-full mt-2 right-0 z-10 bg-white text-black rounded shadow p-2'>
-               
-              </div>
+
+            {/* Hi Sparsh text */}
+            <p className='text-gray-600 hidden sm:block'>Hi, {user.name}</p>
+
+            {/* Profile icon */}
+            <div className='relative'>
+              <img
+                src={assets.profile_icon} // random avatar or use a user.avatar field
+                alt="Profile"
+                className='w-10 h-10 rounded-full cursor-pointer'
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+              />
+
+              {/* Dropdown */}
+              {dropdownOpen && (
+                <div className='absolute top-12 right-0 bg-white border shadow-md rounded-md w-32 z-10'>
+                  <button
+                    onClick={handleLogout}
+                    className='block w-full text-left px-4 py-2 text-sm hover:bg-gray-100'
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
             </div>
           </div>
-        </SignedIn>
-        <SignedOut>
-          <div className='flex items-center gap-2 sm:gap-5'>
-            <p onClick={() => navigate('/buy')} className='cursor-pointer'>Pricing</p>
-            <SignInButton mode="modal">
-              <button className='bg-zinc-800 text-white px-7 py-2 sm:px-10 text-sm rounded-full'>
-                Sign In
-              </button>
-            </SignInButton>
-          </div>
-        </SignedOut>
+        ) : (
+          <button
+            onClick={()=> setShowLogin(true)}
+            className='bg-zinc-800 text-white px-7 py-2 sm:px-10 text-sm rounded-full'
+          >
+            Login
+          </button>
+        )}
       </div>
     </div>
   );
