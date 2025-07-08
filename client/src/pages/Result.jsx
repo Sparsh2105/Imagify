@@ -1,5 +1,6 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { assets } from '../assets/assets'
+import { AppContext } from '../context/AppContext'
 
 const Result = () => {
 
@@ -7,11 +8,23 @@ const Result = () => {
   const [isImageLoaded, setIsImageLoaded] = useState(false)
   const [loading, setLoading] = useState(false)
   const [input,setInput]=useState("")
+  const {generateImage}=useContext(AppContext)
 
-  const onSubmitHandler=async (e)=>{
-    // todo
+  const onSubmitHandler = async (e) => {
+  e.preventDefault();
+  setLoading(true);
 
+  if (input) {
+    const image = await generateImage(input);
+    if (image) {
+      setIsImageLoaded(true);
+      setImage(image);
+    }
   }
+
+  setLoading(false);
+};
+
   return (
     <form  onSubmit={onSubmitHandler} className='p-4 flex flex-col items-center justify-center min-h-screen'>
 
@@ -42,7 +55,7 @@ const Result = () => {
             className="flex-1 bg-transparent outline-none px-4 py-2 placeholder:text-gray-500 text-gray-800"
           />
           <button
-            type='submit'
+            type='submit' 
             className='bg-zinc-900 text-white px-10 sm:px-16 py-2 rounded-full hover:bg-zinc-800 transition'
           >
             Generate

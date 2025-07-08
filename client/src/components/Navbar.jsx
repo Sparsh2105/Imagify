@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { AppContext } from '../context/AppContext.jsx';
 
 const Navbar = () => {
-  const { user, setUser,setShowLogin } = useContext(AppContext);
+  const { user, setUser,setShowLogin,logout,credit } = useContext(AppContext);
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
@@ -45,8 +45,8 @@ const Navbar = () => {
               {/* Dropdown */}
               {dropdownOpen && (
                 <div className='absolute top-12 right-0 bg-white border shadow-md rounded-md w-32 z-10'>
-                  <button
-                    onClick={handleLogout}
+                  <button 
+                    onClick={logout}
                     className='block w-full text-left px-4 py-2 text-sm hover:bg-gray-100'
                   >
                     Logout
