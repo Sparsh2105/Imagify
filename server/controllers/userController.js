@@ -26,16 +26,16 @@ const registerUser = async (req, res) => {
     const user = await newUser.save();
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-res.json({
-  success: true,
-  token,
-  user: {
-    name: user.name,
-    email: user.email,
-    
-    // optionally: creditBalance: user.creditBalance
-  }
-});
+    res.json({
+      success: true,
+      token,
+      user: {
+        name: user.name,
+        email: user.email,
+
+        // optionally: creditBalance: user.creditBalance
+      },
+    });
   } catch (error) {
     console.log(error);
     res.json({
@@ -68,16 +68,16 @@ const loginUser = async (req, res) => {
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
 
-   res.json({
-  success: true,
-  token,
-  user: {
-    name: user.name,
-    email: user.email,
-    
-    // optionally: creditBalance: user.creditBalance
-  }
-});
+    res.json({
+      success: true,
+      token,
+      user: {
+        name: user.name,
+        email: user.email,
+
+        // optionally: creditBalance: user.creditBalance
+      },
+    });
   } catch (error) {
     console.log(error);
     res.json({
