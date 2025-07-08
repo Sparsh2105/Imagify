@@ -5,29 +5,27 @@ const userAuth = async (req, res, next) => {
 
   if (!token) {
     return res.json({
-      success: false,  // ✅ corrected
+      success: false,
       message: 'User not authorised'
     });
   }
-
-  
 
   try {
     const tokenDecode = jwt.verify(token, process.env.JWT_SECRET);
 
     if (tokenDecode.id) {
-      req.body.userId = tokenDecode.id;
+      req.userId = tokenDecode.id; // ✅ Attach directly to `req`, not `req.body`
+      next();
     } else {
       return res.json({
-        success: false,  // ✅ corrected
+        success: false,
         message: 'Not Authorised'
       });
     }
 
-    next();
   } catch (error) {
     return res.json({
-      success: false,  // ✅ corrected
+      success: false,
       message: error.message
     });
   }
