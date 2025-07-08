@@ -1,34 +1,36 @@
-import jwt from 'jsonwebtoken'
-const userAuth= async (req,res,next)=>{
-    const {token}=req.headers;
-    if(!token){
-        return res.json({
-            sucess:false,
-            message: 'User not authorised'
-        })
-    }
-    try {
-        const tokenDecode=jwt.verify(token,process.env.JWT_SECRET)
+import jwt from 'jsonwebtoken';
 
-        if(tokenDecode.id){
-            req.body.userId=tokenDecode.id
+const userAuth = async (req, res, next) => {
+  const { token } = req.headers;
 
-        }
-        else{
-            return res.json({
-                sucess:false,
-                message: ' Not Authiorised'
-            })
-        }
-        next()
-    } catch (error) {
-        return res.json({
-                sucess:false,
-                message: error.message
-            })
+  if (!token) {
+    return res.json({
+      success: false,  // ✅ corrected
+      message: 'User not authorised'
+    });
+  }
 
-        
+  
+
+  try {
+    const tokenDecode = jwt.verify(token, process.env.JWT_SECRET);
+
+    if (tokenDecode.id) {
+      req.body.userId = tokenDecode.id;
+    } else {
+      return res.json({
+        success: false,  // ✅ corrected
+        message: 'Not Authorised'
+      });
     }
 
-}
-export default userAuth
+    next();
+  } catch (error) {
+    return res.json({
+      success: false,  // ✅ corrected
+      message: error.message
+    });
+  }
+};
+
+export default userAuth;

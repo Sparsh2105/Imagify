@@ -31,7 +31,7 @@ export const generateImage = async (req, res) => {
         }
         )
         const base63Image=Buffer.from(data,'binary').toString('base64')
-        const resultImage=`data:image/png:base64,${base63Image}`
+        const resultImage=`data:image/png;base64,${base63Image}` // ✅ fixed ONLY this line
         await userModel.findOneAndUpdate(user._id, {creditBalance: user.creditBalance-1}) // deducted credits
         res.json({
             success:true,
