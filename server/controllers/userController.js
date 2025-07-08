@@ -1,114 +1,118 @@
-import userModel from '../models/userModel.js'
-import bcrypt from 'bcrypt'
-import jwt from 'jsonwebtoken'
+import userModel from "../models/userModel.js";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body
+    const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
       return res.json({
         success: false,
-        message: 'Missing details'
-      })
+        message: "Missing details",
+      });
     }
 
-    const salt = await bcrypt.genSalt(10)
-    const hashedpswd = await bcrypt.hash(password, salt)
+    const salt = await bcrypt.genSalt(10);
+    const hashedpswd = await bcrypt.hash(password, salt);
 
     const userData = {
       name,
       email,
-      password: hashedpswd
-    }
+      password: hashedpswd,
+    };
 
-    const newUser = new userModel(userData)
-    const user = await newUser.save()
+    const newUser = new userModel(userData);
+    const user = await newUser.save();
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET)
-
-    res.json({
-      success: true,
-      token,
-      name: user.name
-    })
-
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+res.json({
+  success: true,
+  token,
+  user: {
+    name: user.name,
+    email: user.email,
+    
+    // optionally: creditBalance: user.creditBalance
+  }
+});
   } catch (error) {
-    console.log(error)
+    console.log(error);
     res.json({
       success: false,
-      message: error.message
-    })
+      message: error.message,
+    });
   }
-}
+};
 
 const loginUser = async (req, res) => {
   try {
-    const { email, password } = req.body
-    const user = await userModel.findOne({ email })
+    const { email, password } = req.body;
+    const user = await userModel.findOne({ email });
 
     if (!user) {
       return res.json({
         success: false,
-        message: 'User Not found'
-      })
+        message: "User Not found",
+      });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password)
+    const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
       return res.json({
         success: false,
-        message: 'Invalid Credentials'
-      })
+        message: "Invalid Credentials",
+      });
     }
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET)
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
 
-    res.json({
-      success: true,
-      token,
-      name: user.name
-    })
-
+   res.json({
+  success: true,
+  token,
+  user: {
+    name: user.name,
+    email: user.email,
+    
+    // optionally: creditBalance: user.creditBalance
+  }
+});
   } catch (error) {
-    console.log(error)
+    console.log(error);
     res.json({
       success: false,
-      message: error.message
-    })
+      message: error.message,
+    });
   }
-}
+};
 
 const userCredits = async (req, res) => {
   try {
-    const { userId } = req.body
-    const user = await userModel.findById(userId)
+    const { userId } = req.body;
+    const user = await userModel.findById(userId);
 
     if (!user) {
       return res.json({
         success: false,
-        message: "User not found in db"
-      })
+        message: "User not found in db",
+      });
     }
 
     return res.json({
       success: true,
       credits: user.creditBalance,
       user: {
-        name: user.name
-      }
-    })
-
+        name: user.name,
+      },
+    });
   } catch (error) {
-    console.log(error.message)
+    console.log(error.message);
     res.json({
       success: false,
-      message: error.message
-    })
+      message: error.message,
+    });
   }
-}
+};
 
-
-
-export { registerUser, loginUser, userCredits }
+export { registerUser, loginUser, userCredits };
