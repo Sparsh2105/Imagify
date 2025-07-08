@@ -27,7 +27,7 @@ const Navbar = () => {
           <div className='flex items-center gap-3 relative'>
             <button onClick={() => navigate('/buy')} className='flex items-center gap-2 bg-blue-100 px-4 py-2 rounded-full hover:scale-105 transition-all duration-300'>
               <img src={assets.credit_star} alt="credits" className='w-5' />
-              <p className='text-sm text-gray-600'>Credits left: {user.credits}</p>
+              <p className='text-sm text-gray-600'>Credits left: {credit}</p>
             </button>
 
             {/* Hi Sparsh text */}
