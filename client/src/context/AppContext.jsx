@@ -42,29 +42,37 @@ const AppContextProvider = (props) => {
     }
   }, [token]);
 
-  const generateImage = async (prompt) => {
-    // ✅ FIXED: added prompt parameter
-    try {
-      const { data } = await axios.post(
-        backendUrl + "/api/image/generate-image",
-        { prompt },
-        { headers: { token } }
-      );
-      if (data.success) {
-        setCredit(data.creditBalance); // ✅ directly set updated credit
-        return data.resultImage;
-      } else {
-        toast.error(data.message);
+ const generateImage = async (prompt) => {
+  try {
+    const { data } = await axios.post(
+      backendUrl + "/api/image/generate-image",
+      {
+        prompt, // ✅ No userId needed
+      },
+      {
+        headers: {
+          token,
+        },
       }
-    } catch (error) {
-      toast.error(error.message);
-      loadCreditsData();
-      if (error?.response?.data?.creditBalance === 0) {
-        // ✅ FIXED: use error.response instead of undefined data
-        navigate("/buy");
-      }
+    );
+
+    if (data.success) {
+      setCredit(data.creditBalance);
+      return data.resultImage;
+    } else {
+      toast.error(data.message);
     }
-  };
+  } catch (error) {
+    toast.error(error.message);
+    loadCreditsData();
+    if (
+      error?.response?.data?.message?.toLowerCase()?.includes("insufficient")
+    ) {
+      navigate("/buy");
+    }
+  }
+};
+
 
   const value = {
     user,
