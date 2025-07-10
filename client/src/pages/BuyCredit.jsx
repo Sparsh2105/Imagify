@@ -7,55 +7,70 @@ import { toast } from "react-toastify";
 import axios from "axios";
 
 const BuyCredit = () => {
-  const { user, backendUrl, setShowLogin, token } = useContext(AppContext);
+  const { user, backendUrl, setShowLogin, token,loadCreditsData } = useContext(AppContext);
   const navigate = useNavigate();
   const initPay = async (order) => {
-  console.log("🚀 Launching Razorpay with order:", order); // <== ADD THIS
+    console.log("🚀 Launching Razorpay with order:", order); // <== ADD THIS
 
-  const options = {
-    key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-    amount: order.amount,
-    currency: order.currency,
-    name: "Credits Payment",
-    description: "Credits Payment",
-    order_id: order.id,
-    receipt: order.receipt,
-    handler: async (response) => {
-      console.log("🎉 Payment success:", response); // <== ADD THIS
-    },
-    
+    const options = {
+      key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+      amount: order.amount,
+      currency: order.currency,
+      name: "Credits Payment",
+      description: "Credits Payment",
+      order_id: order.id,
+      receipt: order.receipt,
+      handler: async (response) => {
+        console.log("🎉 Payment success:", response);
+        try {
+          const { data } = await axios.post(
+            backendUrl + "/api/user/verify-razor",
+            response,
+            { headers: { token } }
+          );
+           if(data.success){
+            loadCreditsData();
+            navigate('/')
+            toast.success('Credits added');
+           }
+
+
+        } catch (error) {
+          toast.error(error.message);
+        } // <== ADD THIS
+      },
+    };
+
+    const razor = new window.Razorpay(options);
+    razor.open();
   };
 
-  const razor = new window.Razorpay(options);
-  razor.open();
-};
+  const paymentRazorpay = async (planId) => {
+    try {
+      if (!user) {
+        setShowLogin(true);
+        return; // prevent continuing without user
+      }
 
-const paymentRazorpay = async (planId) => {
-  try {
-    if (!user) {
-      setShowLogin(true);
-      return; // prevent continuing without user
+      console.log("📦 Calling backend for order...");
+      const { data } = await axios.post(
+        backendUrl + "/api/user/pay-razor",
+        { planId },
+        { headers: { token } }
+      );
+
+      console.log("📬 Backend response:", data);
+
+      if (data.success) {
+        initPay(data.order);
+      } else {
+        toast.error("Order creation failed");
+      }
+    } catch (error) {
+      console.error("❌ Error in Razorpay:", error);
+      toast.error(error.message || "Payment error");
     }
-
-    console.log("📦 Calling backend for order...");
-    const { data } = await axios.post(
-      backendUrl + "/api/user/pay-razor",
-      { planId},
-      { headers: { token } }
-    );
-
-    console.log("📬 Backend response:", data);
-
-    if (data.success) {
-      initPay(data.order);
-    } else {
-      toast.error("Order creation failed");
-    }
-  } catch (error) {
-    console.error("❌ Error in Razorpay:", error);
-    toast.error(error.message || "Payment error");
-  }
-};
+  };
 
   return (
     <div className="min-h-[80vh] text-center pt-14 mb-10">
@@ -79,7 +94,10 @@ const paymentRazorpay = async (planId) => {
               <span className="text-3xl font-medium">₹{item.price}</span> /{" "}
               {item.credits} credits
             </p>
-            <button onClick={()=> paymentRazorpay(item.id)} className="w-full bg-gray-800 text-white mt-8 text-sm rounded-md py-2.5 min-w-52">
+            <button
+              onClick={() => paymentRazorpay(item.id)}
+              className="w-full bg-gray-800 text-white mt-8 text-sm rounded-md py-2.5 min-w-52"
+            >
               {user ? "Purchase" : "Get Started"}
             </button>
           </div>
