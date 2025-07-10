@@ -1,6 +1,8 @@
 import userModel from "../models/userModel.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import razorpay from "razorpay";
+import transactionModel from "../models/transactionModel.js";
 
 const registerUser = async (req, res) => {
   try {
@@ -116,4 +118,81 @@ const userCredits = async (req, res) => {
   }
 };
 
-export { registerUser, loginUser, userCredits };
+const razorpayInstance = new razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
+
+const paymentRazorpay = async (req, res) => {
+  try {
+    const userId= req.userId
+    const {  planId } = req.body;
+
+    console.log("Received request to create Razorpay order");
+    console.log("Request body:", req.body); // 👈 LOG THIS
+
+    console.log("User ID:", userId);
+    console.log("Plan ID:", planId);
+
+    const userData = await userModel.findById(userId);
+    if (!userData || !planId) {
+      return res.json({
+        success: false,
+        message: "Missing details",
+      });
+    }
+
+    let credits, plan, amount;
+    switch (planId) {
+      case "Basic":
+        credits = 100;
+        amount = 10;
+        plan = "Basic";
+        break;
+      case "Advanced":
+        credits = 500;
+        amount = 50;
+        plan = "Advanced";
+        break;
+      case "Business":
+        credits = 5000;
+        amount = 250;
+        plan = "Business";
+        break;
+      default:
+        return res.json({
+          success: false,
+          message: "Invalid plan selected",
+        });
+    }
+
+    const date = Date.now();
+    const transactionData = { userId, plan, amount, credits, date };
+
+    const newTransaction = await transactionModel.create(transactionData);
+    console.log("Transaction saved in DB:", newTransaction._id);
+
+    const options = {
+      amount: amount * 100, // paise
+      currency: process.env.CURRENCY || "INR",
+      receipt: `${newTransaction._id}`,
+    };
+
+    console.log("Razorpay Order Options:", options);
+    const order = await razorpayInstance.orders.create(options);
+    console.log("Razorpay Order Created:", order);
+
+    return res.json({
+      success: true,
+      order,
+    });
+  } catch (error) {
+    console.error("🔴 Razorpay Order Creation Failed:", error);
+    return res.json({
+      success: false,
+      message: error.message || "Order creation failed",
+    });
+  }
+};
+
+export { registerUser, loginUser, userCredits, paymentRazorpay };
