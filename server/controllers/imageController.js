@@ -2,6 +2,7 @@ import userModel from "../models/userModel.js";
 import formData from 'form-data'
 import axios from 'axios'
 
+
 export const generateImage = async (req, res) => {
     try {
         const { userId, prompt } = req.body
