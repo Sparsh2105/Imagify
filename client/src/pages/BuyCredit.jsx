@@ -5,9 +5,11 @@ import { AppContext } from "../context/AppContext.jsx";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import axios from "axios";
+import { motion } from "framer-motion";
 
 const BuyCredit = () => {
-  const { user, backendUrl, setShowLogin, token,loadCreditsData } = useContext(AppContext);
+  const { user, backendUrl, setShowLogin, token, loadCreditsData } =
+    useContext(AppContext);
   const navigate = useNavigate();
   const initPay = async (order) => {
     console.log("🚀 Launching Razorpay with order:", order); // <== ADD THIS
@@ -28,13 +30,11 @@ const BuyCredit = () => {
             response,
             { headers: { token } }
           );
-           if(data.success){
+          if (data.success) {
             loadCreditsData();
-            navigate('/')
-            toast.success('Credits added');
-           }
-
-
+            navigate("/");
+            toast.success("Credits added");
+          }
         } catch (error) {
           toast.error(error.message);
         } // <== ADD THIS
@@ -73,7 +73,13 @@ const BuyCredit = () => {
   };
 
   return (
-    <div className="min-h-[80vh] text-center pt-14 mb-10">
+    <motion.div
+      initial={{ opacity: 0.2, y: 100 }}
+      transition={{ duration: 1 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      className="min-h-[80vh] text-center pt-14 mb-10"
+    >
       <button className="border border-gray-400 px-10 py-2 rounded-full mb-6">
         Our Plans
       </button>
@@ -103,7 +109,7 @@ const BuyCredit = () => {
           </div>
         ))}
       </div>
-    </div>
+    </motion.div>
   );
 };
 

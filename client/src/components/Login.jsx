@@ -1,59 +1,55 @@
 import React, { useContext, useEffect, useState } from "react";
-import axios from 'axios'
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-
+import axios from "axios";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { motion } from "framer-motion";
 
 import { assets } from "../assets/assets";
 import { AppContext } from "../context/AppContext";
 
 const Login = () => {
   const [state, setState] = useState("Login");
-  const { setShowLogin,backendUrl,setToken,setUser } = useContext(AppContext);
+  const { setShowLogin, backendUrl, setToken, setUser } =
+    useContext(AppContext);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const onSubmitHandler = async (e)=>{
+  const onSubmitHandler = async (e) => {
     e.preventDefault();
     try {
-        if(state=== 'Login'){
-            const {data}= await axios.post(backendUrl+ '/api/user/login',{email,password})
-            if(data.success){
-                setToken(data.token)
-                setUser(data.user)
-                localStorage.setItem('token',data.token)
-                setShowLogin(false)
-
-            }
-            else{
-                toast.error(data.message)
-
-            }
-            
+      if (state === "Login") {
+        const { data } = await axios.post(backendUrl + "/api/user/login", {
+          email,
+          password,
+        });
+        if (data.success) {
+          setToken(data.token);
+          setUser(data.user);
+          localStorage.setItem("token", data.token);
+          setShowLogin(false);
+        } else {
+          toast.error(data.message);
         }
-        else{
-            const {data}= await axios.post(backendUrl+ '/api/user/register',{name,email,password})
-            if(data.success){
-                setToken(data.token)
-                setUser(data.user)
-                localStorage.setItem('token',data.token)
-                setShowLogin(false)
-
-            }
-            else{
-                toast.error(data.message)
-
-            }
-            
-
+      } else {
+        const { data } = await axios.post(backendUrl + "/api/user/register", {
+          name,
+          email,
+          password,
+        });
+        if (data.success) {
+          setToken(data.token);
+          setUser(data.user);
+          localStorage.setItem("token", data.token);
+          setShowLogin(false);
+        } else {
+          toast.error(data.message);
         }
+      }
     } catch (error) {
-        toast.error(error.message)
-        
+      toast.error(error.message);
     }
-
-  }
+  };
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -63,8 +59,15 @@ const Login = () => {
     };
   }, []);
   return (
-    <div className="absolute top-0 left-0 right-0 bottom-0 z-10 backdrop-blur-sm bg-black/30 flex justify-center items-center">
-      <form onSubmit={onSubmitHandler} className="relative bg-white p-10 rounded-xl text-slate-500">
+    <div className="fixed top-0 left-0 right-0 bottom-0 z-10 backdrop-blur-sm bg-black/30 flex justify-center items-center">
+      <motion.form
+        initial={{ opacity: 0.2, y: 50 }}
+        transition={{ duration: 0.3 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        onSubmit={onSubmitHandler}
+        className="relative bg-white p-10 rounded-xl text-slate-500"
+      >
         <h1 className="text-center text-2xl text-neutral-700 font-medium ">
           {state}
         </h1>
@@ -142,7 +145,7 @@ const Login = () => {
           className="absolute top-5 right-5 cursor-pointer"
           alt=""
         />
-      </form>
+      </motion.form>
     </div>
   );
 };
