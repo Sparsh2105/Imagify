@@ -4,7 +4,7 @@ import 'dotenv/config'
 import connectDB from '../server/config/mongodb.js'
 import userRouter from './routes/userRoutes.js'
 import imageRouter from './routes/imageRoutes.js'
-const PORT= process.env.PORT
+const PORT= process.env.PORT|| 4000
 const app=express()
 app.use(cors())
 
