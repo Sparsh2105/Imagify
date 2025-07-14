@@ -23,6 +23,7 @@ const Login = () => {
           email,
           password,
         });
+
         if (data.success) {
           setToken(data.token);
           setUser(data.user);
@@ -32,6 +33,11 @@ const Login = () => {
           toast.error(data.message);
         }
       } else {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+          toast.error("Please enter a valid email address.");
+          return;
+        }
         const { data } = await axios.post(backendUrl + "/api/user/register", {
           name,
           email,
@@ -47,7 +53,12 @@ const Login = () => {
         }
       }
     } catch (error) {
-      toast.error(error.message);
+      const message =
+        error.response && error.response.data && error.response.data.message
+          ? error.response.data.message
+          : error.message;
+
+      toast.error(message);
     }
   };
 
