@@ -27,7 +27,7 @@ const Result = () => {
 
     setIsEnhancing(true);
     try {
-      const apiUrl = 'http://localhost:4000/api/gemini/enhance-prompt';
+      const apiUrl = 'https://imagify-i23x.onrender.com/api/gemini/enhance-prompt';
       
       // ✅ FRONTEND FIX APPLIED HERE
       const response = await axios.post(apiUrl,
