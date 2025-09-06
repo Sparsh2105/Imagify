@@ -3,14 +3,52 @@ import { assets } from "../assets/assets";
 import { AppContext } from "../context/AppContext";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
+import axios from "axios";
 
 const Result = () => {
   const [image, setImage] = useState(assets.sample_img_1);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
   const [loading, setLoading] = useState(false);
   const [input, setInput] = useState("");
+  const [isEnhancing, setIsEnhancing] = useState(false);
 
   const { generateImage, token, user, setShowLogin } = useContext(AppContext);
+
+  const handleEnhancePrompt = async () => {
+    if (!input) {
+      toast.info("Please enter a prompt to enhance.");
+      return;
+    }
+    if (!user || !token) {
+      toast.error("Please login to use the enhancer.");
+      setShowLogin(true);
+      return;
+    }
+
+    setIsEnhancing(true);
+    try {
+      const apiUrl = 'http://localhost:4000/api/gemini/enhance-prompt';
+      
+      // ✅ FRONTEND FIX APPLIED HERE
+      const response = await axios.post(apiUrl,
+        { prompt: input },
+        {
+          headers: {
+            'token': token // Sends the 'token' header directly
+          }
+        }
+      );
+      
+      setInput(response.data.enhancedPrompt || input); // Safeguard in case the response is unexpected
+      toast.success("Prompt enhanced!");
+
+    } catch (error) {
+      console.error("❌ FRONTEND: Enhancer Error:", error);
+      toast.error(error.response?.data?.message || "Failed to enhance prompt.");
+    } finally {
+      setIsEnhancing(false);
+    }
+  };
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
@@ -28,10 +66,10 @@ const Result = () => {
 
     setLoading(true);
 
-    const image = await generateImage(input);
-    if (image) {
+    const imageResult = await generateImage(input);
+    if (imageResult) {
       setIsImageLoaded(true);
-      setImage(image);
+      setImage(imageResult);
     }
 
     setLoading(false);
@@ -51,7 +89,7 @@ const Result = () => {
         <img
           className="rounded-xl w-full object-cover shadow-md"
           src={image}
-          alt="Sample"
+          alt="Generated"
         />
       </div>
 
@@ -63,12 +101,13 @@ const Result = () => {
       />
 
       {/* Loading text below line */}
-      {loading ? (
+      {loading && (
         <p className="text-sm mt-2 text-gray-600 text-center mb-6">
-          Loading.....
+          Generating... Please wait.
         </p>
-      ) : null}
+      )}
 
+      {/* Input bar with Enhance button */}
       {!isImageLoaded && (
         <div className="flex w-full max-w-xl bg-gray-200 text-sm p-1 mt-4 rounded-full items-center">
           <input
@@ -78,9 +117,20 @@ const Result = () => {
             placeholder="Describe what you want to generate"
             className="flex-1 bg-transparent outline-none px-4 py-2 placeholder:text-gray-500 text-gray-800"
           />
+          
+          <button
+            type="button"
+            onClick={handleEnhancePrompt}
+            disabled={isEnhancing || loading}
+            className="bg-purple-600 text-white px-5 sm:px-6 py-2 rounded-full hover:bg-purple-700 transition mx-1 disabled:bg-gray-400"
+          >
+            {isEnhancing ? "..." : "✨ Enhance"}
+          </button>
+
           <button
             type="submit"
-            className="bg-zinc-900 text-white px-10 sm:px-16 py-2 rounded-full hover:bg-zinc-800 transition"
+            disabled={isEnhancing || loading}
+            className="bg-zinc-900 text-white px-10 sm:px-12 py-2 rounded-full hover:bg-zinc-800 transition disabled:bg-gray-400"
           >
             Generate
           </button>
@@ -92,6 +142,7 @@ const Result = () => {
           <p
             onClick={() => {
               setIsImageLoaded(false);
+              setInput(""); // Clear input when starting a new generation
             }}
             className="bg-transparent border border-zinc-900 text-black px-8 py-3 rounded-full cursor-pointer"
           >
