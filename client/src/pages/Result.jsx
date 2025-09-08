@@ -4,6 +4,7 @@ import { AppContext } from "../context/AppContext";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 import axios from "axios";
+import { useGoogleLogin } from "@react-oauth/google";
 
 const Result = () => {
   const [image, setImage] = useState(assets.sample_img_1);
@@ -11,6 +12,10 @@ const Result = () => {
   const [loading, setLoading] = useState(false);
   const [input, setInput] = useState("");
   const [isEnhancing, setIsEnhancing] = useState(false);
+  
+  // State for the upload feature
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState('');
 
   const { generateImage, token, user, setShowLogin } = useContext(AppContext);
 
@@ -29,17 +34,16 @@ const Result = () => {
     try {
       const apiUrl = 'https://imagify-i23x.onrender.com/api/gemini/enhance-prompt';
       
-      // ✅ FRONTEND FIX APPLIED HERE
       const response = await axios.post(apiUrl,
         { prompt: input },
         {
           headers: {
-            'token': token // Sends the 'token' header directly
+            'token': token
           }
         }
       );
       
-      setInput(response.data.enhancedPrompt || input); // Safeguard in case the response is unexpected
+      setInput(response.data.enhancedPrompt || input);
       toast.success("Prompt enhanced!");
 
     } catch (error) {
@@ -74,6 +78,38 @@ const Result = () => {
 
     setLoading(false);
   };
+
+  // Google Drive Upload Logic
+  const login = useGoogleLogin({
+    onSuccess: async (codeResponse) => {
+      setIsUploading(true);
+      setUploadStatus("Saving to Drive...");
+      try {
+        const apiUrl = 'http://localhost:4000/api/drive/upload';
+        const response = await axios.post(apiUrl, {
+          code: codeResponse.code,
+          imageData: image,
+          imageName: `${input.slice(0, 30)}.png`
+        });
+        if (response.data.success) {
+          setUploadStatus("✅ Saved successfully!");
+          toast.success("Image saved to your Google Drive!");
+        } else {
+          setUploadStatus(`❌ Error: ${response.data.message}`);
+          toast.error(response.data.message);
+        }
+      } catch (error) {
+        console.error("❌ FRONTEND: Drive Upload Error:", error);
+        setUploadStatus("❌ Network error.");
+        toast.error(error.response?.data?.message || "Failed to upload to Drive.");
+      } finally {
+        setIsUploading(false);
+        setTimeout(() => setUploadStatus(''), 4000);
+      }
+    },
+    flow: 'auth-code',
+    scope: 'https://www.googleapis.com/auth/drive.file',
+  });
 
   return (
     <motion.form
@@ -138,23 +174,35 @@ const Result = () => {
       )}
 
       {isImageLoaded && (
-        <div className="flex gap-2 flex-wrap justify-center text-white text-sm p-0.5 mt-10 rounded-full">
-          <p
-            onClick={() => {
-              setIsImageLoaded(false);
-              setInput(""); // Clear input when starting a new generation
-            }}
-            className="bg-transparent border border-zinc-900 text-black px-8 py-3 rounded-full cursor-pointer"
-          >
-            Generate Another
-          </p>
-          <a
-            href={image}
-            download
-            className="bg-zinc-900 px-10 py-3 rounded-full cursor-pointer"
-          >
-            Download
-          </a>
+        <div className="flex flex-col items-center w-full">
+            <div className="flex gap-2 flex-wrap justify-center text-white text-sm p-0.5 mt-10 rounded-full">
+                <p
+                    onClick={() => {
+                    setIsImageLoaded(false);
+                    setInput(""); // Clear input when starting a new generation
+                    }}
+                    className="bg-transparent border border-zinc-900 text-black px-8 py-3 rounded-full cursor-pointer"
+                >
+                    Generate Another
+                </p>
+                <a
+                    href={image}
+                    download
+                    className="bg-zinc-900 px-10 py-3 rounded-full cursor-pointer"
+                >
+                    Download
+                </a>
+                {/* Save to Drive Button Added Here */}
+                <button
+                    type="button"
+                    onClick={() => login()}
+                    disabled={isUploading}
+                    className="bg-blue-600 px-10 py-3 rounded-full cursor-pointer hover:bg-blue-700 transition disabled:bg-gray-400"
+                >
+                    {isUploading ? "Saving..." : "Save to Drive"}
+                </button>
+            </div>
+            {uploadStatus && <p className="mt-4 text-sm text-gray-700">{uploadStatus}</p>}
         </div>
       )}
     </motion.form>
